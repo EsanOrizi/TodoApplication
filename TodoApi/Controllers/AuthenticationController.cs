@@ -58,15 +58,15 @@ namespace TodoApi.Controllers
                 DateTime.Now,
                 DateTime.Now.AddMinutes(1),
                 signinCredentials);
-                
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         private UserData? ValidateCredenetials(AutheticationData data)
         {
-           // this is not production code, replace this with a call to your auth system
-           if(CompareValues(data.UserName, "Esan") && 
-              CompareValues(data.Password, "Test123"))
+            // this is not production code, replace this with a call to your auth system
+            if (CompareValues(data.UserName, "Esan") &&
+               CompareValues(data.Password, "Test123"))
             {
                 return new UserData(1, "Esan", "Orizi", data.UserName!);
             }
@@ -94,4 +94,5 @@ namespace TodoApi.Controllers
             }
             return false;
         }
+    }
 }
