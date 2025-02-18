@@ -8,7 +8,7 @@ namespace TodoLibrary.DataAccess
         Task<TodoModel?> Create(int assignedTo, string task);
         Task Delete(int assignedTo, int todoId);
         Task<List<TodoModel>> GetAllAssigned(int assignedTo);
-        Task<TodoModel?> GetOneAssigned(int assignedTo);
+        Task<TodoModel?> GetOneAssigned(int assignedTo, int todoId);
         Task UpdateTask(int assignedTo, int todoId, string task);
     }
 }

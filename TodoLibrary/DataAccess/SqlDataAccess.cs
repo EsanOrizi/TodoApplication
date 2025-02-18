@@ -31,12 +31,12 @@ namespace TodoLibrary.DataAccess
 
 
 
-        public Task SaveData<T>(string storedProcedure, T parameters, string connectionStringName)
+        public async Task SaveData<T>(string storedProcedure, T parameters, string connectionStringName)
         {
             string connectionString = config.GetConnectionString(connectionStringName);
             using (IDbConnection connection = new SqlConnection(connectionString))
             {
-                return connection.ExecuteAsync(storedProcedure, parameters,
+                await connection.ExecuteAsync(storedProcedure, parameters,
                     commandType: CommandType.StoredProcedure);
             }
         }

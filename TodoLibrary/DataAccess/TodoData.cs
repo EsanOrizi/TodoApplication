@@ -18,10 +18,10 @@ namespace TodoLibrary.DataAccess
         }
 
 
-        public async Task<TodoModel?> GetOneAssigned(int assignedTo)
+        public async Task<TodoModel?> GetOneAssigned(int assignedTo, int todoId)
         {
             var results = await sql.LoadData<TodoModel, dynamic>("spTodos_GetOneAssigned",
-                new { AssignedTo = assignedTo }, "Default");
+                new { AssignedTo = assignedTo, TodoId = todoId }, "Default");
 
             return results.FirstOrDefault();
         }
@@ -44,7 +44,7 @@ namespace TodoLibrary.DataAccess
 
         public Task CompleteTodo(int assignedTo, int todoId)
         {
-            return sql.SaveData<dynamic>("spTodos_CompeleteTodo",
+            return sql.SaveData<dynamic>("spTodos_CompleteTodo",
                 new { AssignedTo = assignedTo, TodoId = todoId }, "Default");
         }
 

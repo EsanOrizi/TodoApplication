@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -32,7 +31,7 @@ namespace TodoApi.Controllers
                 return Unauthorized();
             }
 
-            var token = GenerateToken(user);
+            string token = GenerateToken(user);
             return Ok(token);
 
         }
@@ -55,8 +54,8 @@ namespace TodoApi.Controllers
                 _config.GetValue<string>("Authentication:Issuer"),
                 _config.GetValue<string>("Authentication:Audience"),
                 claims,
-                DateTime.Now,
-                DateTime.Now.AddMinutes(1),
+                DateTime.UtcNow,
+                DateTime.UtcNow.AddMinutes(1),
                 signinCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
