@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TodoLibrary.DataAccess;
@@ -13,11 +14,12 @@ namespace TodoApi.Controllers
     public class TodosController : ControllerBase
     {
         private readonly ITodoData data;
-        
-        public TodosController(ITodoData data)
+        private readonly ILogger<TodosController> logger;
+
+        public TodosController(ITodoData data, ILogger<TodosController> logger)
         {
             this.data = data;
-           
+            this.logger = logger;
         }
 
         private int GetUserId()
@@ -30,9 +32,19 @@ namespace TodoApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoModel>>> Get()
         {
-            var output = await data.GetAllAssigned(GetUserId());
+            logger.LogInformation("Getting all todos");
+            try
+            {
+                var output = await data.GetAllAssigned(GetUserId());
+                return Ok(output);
 
-            return Ok(output);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error getting all todos");
+                return BadRequest();
+            }
+
         }
 
         // GET api/Todos/5
@@ -40,9 +52,19 @@ namespace TodoApi.Controllers
         public async Task<ActionResult<TodoModel>> Get(int todoId)
         {
 
-           var output = await data.GetOneAssigned(GetUserId(), todoId);
+            try
+            {
+                var output = await data.GetOneAssigned(GetUserId(), todoId);
+                return Ok(output);
+            }
+            catch (Exception ex)
+            {
 
-            return Ok(output);
+                logger.LogError(ex, "Error getting todo {todoId}", todoId);
+                return BadRequest();
+            }
+
+            
         }
 
 
