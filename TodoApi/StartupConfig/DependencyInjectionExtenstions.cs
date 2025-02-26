@@ -1,32 +1,80 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 using TodoLibrary.DataAccess;
 
 namespace TodoApi.StartupConfig
 {
-    public static class DependencyInjectionExtenstions
+    public static class DependencyInjectionExtentions
     {
-        public static void AddServices(this WebApplicationBuilder builder)
+        public static void AddStandardServices(this WebApplicationBuilder builder)
         {
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.AddSwaggerServices();
+        }
+
+        private static void AddSwaggerServices(this WebApplicationBuilder builder)
+        {
+            var securityScheme = new OpenApiSecurityScheme()
+            {
+                Name = "Autherization",
+                Description = "JWT Autherization header info using bearer tokens",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
+            };
+
+            var securityRequirement = new OpenApiSecurityRequirement
+            {
+                {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "bearerAuth"
+                    }
+                },
+                new string[]{}
+                }
+            };
+
+            builder.Services.AddSwaggerGen(opts =>
+            {
+                opts.AddSecurityDefinition("bearerAuth", securityScheme);
+                opts.AddSecurityRequirement(securityRequirement);
+            });
+        }
+
+
+        public static void AddCustomServices(this WebApplicationBuilder builder)
+        {
             builder.Services.AddSingleton<ISqlDataAccess, SqlDataAccess>();
             builder.Services.AddSingleton<ITodoData, TodoData>();
+        }
+
+
+        public static void AddHealthCheckServices(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddHealthChecks()
+                   .AddSqlServer(builder.Configuration.GetConnectionString("Default"));
+        }
+
+        public static void AddAuthServices(this WebApplicationBuilder builder)
+        {
             builder.Services.AddAuthorization(opts =>
             {
                 opts.FallbackPolicy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
+                      .RequireAuthenticatedUser()
+                      .Build();
             });
 
-            builder.Services.AddHealthChecks().
-                AddSqlServer(builder.Configuration.GetConnectionString("Default"));
 
             builder.Services.AddAuthentication("Bearer")
-                .AddJwtBearer("Bearer", opts =>
+                .AddJwtBearer(opts =>
                 {
                     opts.TokenValidationParameters = new()
                     {
@@ -36,13 +84,11 @@ namespace TodoApi.StartupConfig
                         ValidIssuer = builder.Configuration.GetValue<string>("Authentication:Issuer"),
                         ValidAudience = builder.Configuration.GetValue<string>("Authentication:Audience"),
                         IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.ASCII.GetBytes(
-                                builder.Configuration.GetValue<string>("Authentication:SecretKey")))
-
+                            Encoding.ASCII.GetBytes(builder.Configuration.GetValue<string>("Authentication:SecretKey")))
                     };
                 });
-
-
         }
     }
 }
+
+
